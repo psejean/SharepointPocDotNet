@@ -25,6 +25,9 @@ namespace MyFunctionApp
 
             var query = System.Web.HttpUtility.ParseQueryString(req.Url.Query);
             string studentId = query["studentId"];
+            string emailTeachersParam = query["emailteachers"];
+            bool emailTeachers = !string.IsNullOrEmpty(emailTeachersParam) && emailTeachersParam.ToLower() == "true";
+
             if (string.IsNullOrEmpty(studentId))
             {
                 var badRequestResponse = req.CreateResponse(System.Net.HttpStatusCode.BadRequest);
@@ -41,9 +44,12 @@ namespace MyFunctionApp
                 {
                     await connection.OpenAsync();
 
+                    // Decide which stored procedure to call based on the 'emailteachers' query parameter
+                    string storedProcedure = emailTeachers ? "TEACHER_EMAIL_LIST" : "SAY_HELLO_WORLD";
+
                     using (var command = connection.CreateCommand())
                     {
-                        command.CommandText = "TEACHER_EMAIL_LIST";
+                        command.CommandText = storedProcedure;
                         command.CommandType = System.Data.CommandType.StoredProcedure;
 
                         // Input parameter
